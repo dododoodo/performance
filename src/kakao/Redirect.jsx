@@ -12,10 +12,9 @@ function Redirect() {
     useEffect(() => {
         if (!code) return;
     
-        console.log("인가 코드:", code); // 🔍 인가 코드 출력 (콘솔에서 확인)
         
         // 카카오 로그인 후, 받은 데이터로 sessionStorage에 정보 저장
-        axios.get("http://localhost:4000/kakao", { params: { code } })
+        axios.get(`${process.env.REACT_APP_APIURL}/kakao`, { params: { code } })
         .then((res) => {
             console.log("카카오 로그인 응답 데이터:", res.data);
             const { access_token, properties, kakao_account } = res.data;
