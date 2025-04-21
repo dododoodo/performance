@@ -42,7 +42,7 @@ function LoginPage() {
       sessionStorage.setItem("user", JSON.stringify({ nickname: userName }));
       sessionStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("currentUser", JSON.stringify(foundUser));
-
+      localStorage.setItem("loginType", "local"); 
   
       navigate("/home");
     } else {

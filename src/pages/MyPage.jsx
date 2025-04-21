@@ -19,21 +19,22 @@ function MyPage() {
   const [ratedShows, setRatedShows] = useState({});
 
   useEffect(() => {
+    const loginTypeStorage = localStorage.getItem("loginType");
     const kakaoUser = JSON.parse(sessionStorage.getItem("user"));
     const naverProfile = JSON.parse(localStorage.getItem("profile"));
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
   
-    if (kakaoUser?.nickname) {
+    if (loginTypeStorage === 'kakao' && kakaoUser?.nickname) {
       setUserName(kakaoUser.nickname);
       setEmail('-');
       setPhone('-');
       setLoginType('카카오 로그인');
-    } else if (naverProfile?.nickname) {
+    } else if (loginTypeStorage === 'naver' && naverProfile?.nickname) {
       setUserName(naverProfile.nickname);
       setEmail(naverProfile.email || '-');
       setPhone(naverProfile.mobile || '-');
       setLoginType('네이버 로그인');
-    } else if (currentUser?.nickname) {
+    } else if (loginTypeStorage === 'local' && currentUser?.nickname) {
       setUserName(currentUser.nickname);
       setEmail(currentUser.email || '-');
       setPhone(currentUser.phone || '-');
@@ -49,6 +50,7 @@ function MyPage() {
     setRatedShows(ratingData);
   }, []);
   
+  
 
   const toggleAccordion = (star) => {
     setAccordionState(prev => (prev === star ? null : star));
@@ -63,13 +65,13 @@ function MyPage() {
         console.error("카카오 로그아웃 오류:", error);
       }
     }
-    window.sessionStorage.removeItem("access");
-    window.sessionStorage.removeItem("user");
-    window.sessionStorage.removeItem("isLoggedIn");
-    localStorage.removeItem('userName');
+    sessionStorage.clear();
     localStorage.removeItem('profile');
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('loginType');
     navigate('/onboarding');
   };
+  
 
   const renderStars = (starCount) => {
     const stars = [];
