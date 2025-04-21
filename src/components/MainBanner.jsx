@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { publicData } from '../api/api.js';
-import arrow from '../images/home_banner_01.png';
 import { useNavigate } from 'react-router-dom';
+import arrow from '../images/home_banner_01.png';
 
 const checkImageValid = (url) => {
   return new Promise((resolve) => {
@@ -13,13 +12,14 @@ const checkImageValid = (url) => {
 };
 
 function MainBanner({ onLoad }) {
-  const navigate = useNavigate(); 
-  const [backgroundImage, setBackgroundImage] = useState(""); // 백 이미지
-  const [title, setTitle] = useState(""); // 표시될 텍스트
+  const navigate = useNavigate();
+  const [backgroundImage, setBackgroundImage] = useState(""); // 배경 이미지
+  const [title, setTitle] = useState(""); // 제목
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [userName, setUserName] = useState(''); // 유저 이름
-  const [selectedShow, setSelectedShow] = useState(null); // 공연 정보
+  const [userName, setUserName] = useState(''); // 사용자 이름
+  const [selectedShow, setSelectedShow] = useState(null); // 선택된 공연 정보
 
+  // 유저 이름 설정
   useEffect(() => {
     const loggedInUser = JSON.parse(sessionStorage.getItem('user'));
     const storedUserName = localStorage.getItem('userName');
@@ -31,44 +31,49 @@ function MainBanner({ onLoad }) {
     else setUserName("Guest");
   }, []);
 
+  // 배경 이미지 설정
   useEffect(() => {
     const randomImage = async () => {
-      const data = await publicData({ numOfRows: 20, pageNo: 1 });
-      let items = data?.items;
-      if (!items) return;
-  
-      if (!Array.isArray(items)) items = Object.values(items);
-  
-      const validItems = items
-        .filter(item => item.IMAGE_OBJECT && item.IMAGE_OBJECT !== "")
-        .sort(() => 0.5 - Math.random());
-  
-      for (const item of validItems) {
-        let imageUrl = item.IMAGE_OBJECT;
-        if (typeof imageUrl === "object") {
-          imageUrl = imageUrl.imageUrl || Object.values(imageUrl)[0];
+      try {
+        const response = await fetch('/data.json');
+        if (!response.ok) throw new Error('데이터를 가져오는 데 실패했습니다.');
+        const data = await response.json();
+
+        let items = data?.response?.body?.items?.item || [];
+        if (!Array.isArray(items)) items = Object.values(items);
+
+        const validItems = items
+          .filter(item => item.IMAGE_OBJECT && item.IMAGE_OBJECT !== "")
+          .sort(() => 0.5 - Math.random());
+
+        for (const item of validItems) {
+          let imageUrl = item.IMAGE_OBJECT;
+          if (typeof imageUrl === "object") {
+            imageUrl = imageUrl.imageUrl || Object.values(imageUrl)[0];
+          }
+
+          const isValid = await checkImageValid(imageUrl);
+          if (isValid) {
+            const img = new Image();
+            img.onload = () => {
+              setBackgroundImage(imageUrl);
+              setTitle(item.TITLE);
+              setSelectedShow(item);
+              setImageLoaded(true);
+              onLoad?.();
+            };
+            img.src = imageUrl;
+            return;
+          }
         }
-  
-        const isValid = await checkImageValid(imageUrl);
-        if (isValid) {
-          const img = new Image();
-          img.onload = () => {
-            setBackgroundImage(imageUrl);
-            setTitle(item.TITLE);
-            setSelectedShow(item);
-            setImageLoaded(true);
-            onLoad?.();
-          };
-          img.src = imageUrl;
-          return;
-        }
+      } catch (error) {
+        console.error('이미지 가져오기 오류:', error);
       }
     };
-  
+
     randomImage();
   }, [onLoad]);
-  
-  
+
   const moreBtn = () => {
     if (selectedShow) {
       sessionStorage.setItem("selectedShow", JSON.stringify(selectedShow));
@@ -111,7 +116,5 @@ function MainBanner({ onLoad }) {
     </>
   );
 }
-
-
 
 export default MainBanner;

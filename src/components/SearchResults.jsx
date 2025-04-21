@@ -1,12 +1,42 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import useSearchResults from '../api/useSearchResults';
+import { useState, useEffect } from 'react';
 import ShowCard from '../components/ShowCard';
 
 import '../styles/components.scss';
 
 function SearchResults({ keyword }) {
-  const { data, loading } = useSearchResults(keyword);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch('/data.json');
+        const result = await response.json();
+        const items = result?.response?.body?.items?.item || [];
+
+        // 검색어로 필터링
+        const filteredData = items.filter((item) =>
+          item.TITLE.toLowerCase().includes(keyword.toLowerCase())
+        );
+
+        setData(filteredData);
+      } catch (error) {
+        console.error('검색 결과를 불러오는 중 오류 발생:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (keyword) {
+      fetchData();
+    } else {
+      setData([]);
+      setLoading(false);
+    }
+  }, [keyword]);
 
   if (!keyword) return <p className="search_message">검색어를 입력해주세요.</p>;
 
@@ -44,16 +74,16 @@ function SearchResults({ keyword }) {
       {data.map((item, index) => (
         <ShowCard
           key={item.id || index}
-          title={item.title}
-          genre={item.genre}
-          image={item.image}
-          audience={item.audience}
-          period={item.period}
-          eventPeriod={item.eventPeriod}
-          charge={item.charge}
-          description={item.description}
-          url={item.url}
-      />
+          title={item.TITLE}
+          genre={item.GENRE}
+          image={item.IMAGE_OBJECT || '기본이미지.png'}
+          audience={item.AUDIENCE}
+          period={item.PERIOD}
+          eventPeriod={item.EVENT_PERIOD}
+          charge={item.CHARGE}
+          description={item.DESCRIPTION}
+          url={item.URL}
+        />
       ))}
     </div>
   );

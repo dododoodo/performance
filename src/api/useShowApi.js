@@ -1,7 +1,4 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-
-const API_BASE_URL = `${process.env.REACT_APP_APIURL}/kcisa`;
 
 function useShowApi() {
   const [latestList, setLatestList] = useState([]);
@@ -11,8 +8,10 @@ function useShowApi() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}?numOfRows=100&pageNo=1`);
-        let items = res.data?.items || [];
+        const res = await fetch('/data.json');
+        const data = await res.json();
+
+        let items = data?.response?.body?.items?.item || [];
         
         const allItems = Array.isArray(items) ? items : [items];
         const withImage = allItems.filter(item => item.IMAGE_OBJECT);
@@ -27,6 +26,7 @@ function useShowApi() {
     };
     fetchData();
   }, []);
+
   return { latestList, musicalList, classicList };
 }
 

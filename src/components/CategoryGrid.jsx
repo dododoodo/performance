@@ -1,10 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
-import { publicData } from '../api/api';
 
-// Import Swiper styles
 import 'swiper/css';
 
 // image import
@@ -37,31 +35,43 @@ function CategoryGrid() {
     { name: '교향곡', sub: 'SYMPHONY', image: categoryImg9 },
   ];
 
+  // 데이터 불러오기
   useEffect(() => {
     const fetchData = async () => {
-      const data = await publicData({ numOfRows: 20 });
-      let items = data.response.body.items.item;
-      if (!Array.isArray(items)) {
-        items = [items];
+      try {
+        const response = await fetch('/data.json');
+        const data = await response.json();
+
+        let items = data?.response?.body?.items?.item || [];
+        if (!Array.isArray(items)) {
+          items = [items];
+        }
+
+        // 랜덤 공연 5개 가져오기
+        const random = [...items].sort(() => 0.5 - Math.random()).slice(0, 5);
+        setRandomShows(random);
+
+        // 최신 공연 5개 가져오기
+        const latest = items.slice(0, 5);
+        setLatestShows(latest);
+      } catch (error) {
+        console.error("데이터를 불러오는 중 오류 발생:", error);
       }
-
-      const random = [...items].sort(() => 0.5 - Math.random()).slice(0, 5);
-      setRandomShows(random);
-
-      const latest = items.slice(0, 5);
-      setLatestShows(latest);
     };
 
     fetchData();
   }, []);
-  
+
+  // 카테고리 버튼 클릭 시
   const CategoryBtn = (genre) => {
     navigate('/category', { state: { selectedGenre: genre } });
   };
+
   const bannerBtn = () => {
     navigate('/contents');
   };
 
+  // 슬라이드 생성 함수
   const renderSlides = (data) => {
     return data.map((show, index) => {
       const showData = {
@@ -75,8 +85,7 @@ function CategoryGrid() {
         DESCRIPTION: show.DESCRIPTION || '정보 없음',
         URL: show.URL || '',
       };
-      
-  
+
       return (
         <SwiperSlide key={index}>
           <div
@@ -102,68 +111,66 @@ function CategoryGrid() {
     });
   };
 
+  return (
+    <>
+      <div className='category_text'>
+        <p>카테고리로 손쉽게 공연을 찾아보세요</p>
+        <img src={searchText} alt="" />
+      </div>
+      <div className="category_grid">
+        {categories.map((cat, idx) => (
+          <button
+            key={idx}
+            className="category_btn"
+            style={{ backgroundImage: `url(${cat.image})` }}
+            onClick={() => CategoryBtn(cat.name)}
+          >
+            <div className="overlay" />
+            <div className="text_group">
+              <span className="kor">{cat.name}</span>
+              <span className="eng">{cat.sub}</span>
+            </div>
+          </button>
+        ))}
+      </div>
 
-    return (
-      <>
-        <div className='category_text'>
-          <p>카테고리로 손쉽게 공연을 찾아보세요</p>
-          <img src={searchText} alt="" />
-        </div>
-        <div className="category_grid">
-          {categories.map((cat, idx) => (
-            <button
-              key={idx}
-              className="category_btn"
-              style={{ backgroundImage: `url(${cat.image})` }}
-              onClick={() => CategoryBtn(cat.name)}
+      <div className="banner_box">
+        <div className='banner_container'>
+          <p>오늘의 인기 공연이에요!</p>
+          <div className="banner" >
+            <Swiper
+              spaceBetween={30}
+              centeredSlides={true}
+              autoplay={{
+                delay: 4500,
+              }}
+              modules={[Autoplay]}
+              className="mySwiper"
             >
-              <div className="overlay" />
-              <div className="text_group">
-                <span className="kor">{cat.name}</span>
-                <span className="eng">{cat.sub}</span>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        <div className="banner_box">
-          <div className='banner_container'>
-            <p>오늘의 인기 공연이에요!</p>
-            <div className="banner" >
-              <Swiper
-                spaceBetween={30}
-                centeredSlides={true}
-                autoplay={{
-                  delay: 4500,
-                }}
-                modules={[Autoplay]}
-                className="mySwiper"
-              >
-                {renderSlides(randomShows)}
-              </Swiper>
-            </div>
-          </div>
-
-          <div className='banner_container'>
-            <p>가장 최신에 나온 공연이에요!</p>
-            <div className="banner">
-              <Swiper
-                spaceBetween={30}
-                centeredSlides={true}
-                autoplay={{
-                  delay: 4500,
-                }}
-                modules={[Autoplay]}
-                className="mySwiper"
-              >
-                {renderSlides(latestShows)}
-              </Swiper>
-            </div>
+              {renderSlides(randomShows)}
+            </Swiper>
           </div>
         </div>
-      </>
-    );
-  }
-  
 
-export default CategoryGrid
+        <div className='banner_container'>
+          <p>가장 최신에 나온 공연이에요!</p>
+          <div className="banner">
+            <Swiper
+              spaceBetween={30}
+              centeredSlides={true}
+              autoplay={{
+                delay: 4500,
+              }}
+              modules={[Autoplay]}
+              className="mySwiper"
+            >
+              {renderSlides(latestShows)}
+            </Swiper>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default CategoryGrid;

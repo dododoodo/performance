@@ -1,7 +1,4 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-
-const API_BASE_URL = `${process.env.REACT_APP_APIURL}/kcisa`;
 
 function useSearchResults(keyword) {
   const [data, setData] = useState([]);
@@ -19,14 +16,20 @@ function useSearchResults(keyword) {
       setLoading(true);
       setHasSearched(true);
       try {
-        const response = await axios.get(`${API_BASE_URL}?numOfRows=100&pageNo=1`);
+        const response = await fetch('/data.json'); 
+        if (!response.ok) {
+          throw new Error('데이터를 가져오는 데 실패했습니다.');
+        }
+        const data = await response.json();
+        
+        const items = data?.response?.body?.items?.item || [];
 
-        const items = response.data?.items || [];
-
+        // 검색어로 필터링
         const filteredItems = items.filter(item =>
           item.TITLE?.toLowerCase().includes(keyword.toLowerCase())
         );
 
+        // 필요한 데이터만 추출
         const processedItems = filteredItems.map(item => ({
           title: item.TITLE || '제목 없음',
           image: item.IMAGE_OBJECT || null,
