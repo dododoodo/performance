@@ -14,7 +14,7 @@ function MyPage() {
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [loginType, setLoginType] = useState('');  // 로그인 유형 상태 추가
+  const [loginType, setLoginType] = useState('');
   const [accordionState, setAccordionState] = useState(null);
   const [ratedShows, setRatedShows] = useState({});
 
@@ -22,32 +22,33 @@ function MyPage() {
     const kakaoUser = JSON.parse(sessionStorage.getItem("user"));
     const naverProfile = JSON.parse(localStorage.getItem("profile"));
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-
-    if (currentUser?.nickname) {
-      setUserName(currentUser.nickname);
-      setEmail(currentUser.email || '-');
-      setPhone(currentUser.phone || '-');
-      setLoginType('자체 로그인');
+  
+    if (kakaoUser?.nickname) {
+      setUserName(kakaoUser.nickname);
+      setEmail('-');
+      setPhone('-');
+      setLoginType('카카오 로그인');
     } else if (naverProfile?.nickname) {
       setUserName(naverProfile.nickname);
       setEmail(naverProfile.email || '-');
       setPhone(naverProfile.mobile || '-');
       setLoginType('네이버 로그인');
-    } else if (kakaoUser?.nickname) {
-      setUserName(kakaoUser.nickname);
-      setEmail('-');
-      setPhone('-');
-      setLoginType('카카오 로그인');
+    } else if (currentUser?.nickname) {
+      setUserName(currentUser.nickname);
+      setEmail(currentUser.email || '-');
+      setPhone(currentUser.phone || '-');
+      setLoginType('자체 로그인');
     } else {
       setUserName("Guest");
       setEmail("-");
       setPhone("-");
       setLoginType('');
     }
-
+  
     const ratingData = JSON.parse(sessionStorage.getItem("rating_shows")) || {};
     setRatedShows(ratingData);
   }, []);
+  
 
   const toggleAccordion = (star) => {
     setAccordionState(prev => (prev === star ? null : star));

@@ -23,7 +23,7 @@ function Callback() {
                 loginType: '네이버'
             };
         
-            window.sessionStorage.setItem("user", JSON.stringify(userData));  // user 정보 저장
+            window.sessionStorage.setItem("user", JSON.stringify(userData));
             window.sessionStorage.setItem("isLoggedIn", "true");
             
             window.opener.location.href = "/home";
