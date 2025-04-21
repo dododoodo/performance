@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const API_BASE_URL = `${process.env.REACT_APP_APIURL}/kcisa`;
-const SERVICE_KEY = '356b0d91-82e9-43e0-b690-b78a982ec774';
 
 function useSearchResults(keyword) {
   const [data, setData] = useState([]);
@@ -20,19 +19,9 @@ function useSearchResults(keyword) {
       setLoading(true);
       setHasSearched(true);
       try {
-        const response = await axios.get(API_BASE_URL, {
-          params: {
-            serviceKey: SERVICE_KEY,
-            numOfRows: 100,
-            pageNo: 1,
-            keyword,
-          },
-          headers: {
-            Accept: 'application/json',
-          },
-        });
+        const response = await axios.get(`${API_BASE_URL}?numOfRows=100&pageNo=1`);
 
-        const items = response.data?.response?.body?.items?.item || [];
+        const items = response.data?.items || [];
 
         const filteredItems = items.filter(item =>
           item.TITLE?.toLowerCase().includes(keyword.toLowerCase())
@@ -49,9 +38,11 @@ function useSearchResults(keyword) {
           description: item.DESCRIPTION || '설명 없음',
           url: item.URL || '', 
         }));
-        
 
         setData(processedItems);
+      } catch (error) {
+        console.error('검색 결과를 가져오는 중 오류 발생:', error);
+        setData([]);
       } finally {
         setLoading(false);
       }
@@ -59,7 +50,6 @@ function useSearchResults(keyword) {
 
     fetchSearchResults();
   }, [keyword]);
-
 
   return { data, loading, hasSearched };
 }
