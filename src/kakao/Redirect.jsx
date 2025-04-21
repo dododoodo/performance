@@ -30,6 +30,8 @@ function Redirect() {
             window.sessionStorage.setItem("user", JSON.stringify(userData));  // user 정보를 저장
             window.sessionStorage.setItem("isLoggedIn", "true");
 
+            localStorage.setItem("loginType", "kakao");
+
             setUser(userData);  // 사용자 상태 업데이트
             navigate("/home");
         })

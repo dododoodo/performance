@@ -25,6 +25,8 @@ function Callback() {
         
             window.sessionStorage.setItem("user", JSON.stringify(userData));
             window.sessionStorage.setItem("isLoggedIn", "true");
+
+            localStorage.setItem("loginType", "naver");
             
             window.opener.location.href = "/home";
             window.close();
