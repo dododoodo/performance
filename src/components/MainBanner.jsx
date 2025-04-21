@@ -34,39 +34,40 @@ function MainBanner({ onLoad }) {
   useEffect(() => {
     const randomImage = async () => {
       const data = await publicData({ numOfRows: 20, pageNo: 1 });
-      if (data?.response?.body?.items?.item) {
-        let items = data.response.body.items.item;
-        if (!Array.isArray(items)) items = Object.values(items);
+      let items = data?.items;
+      if (!items) return;
   
-        const validItems = items
-          .filter(item => item.IMAGE_OBJECT && item.IMAGE_OBJECT !== "")
-          .sort(() => 0.5 - Math.random());
+      if (!Array.isArray(items)) items = Object.values(items);
   
-        for (const item of validItems) {
-          let imageUrl = item.IMAGE_OBJECT;
-          if (typeof imageUrl === "object") {
-            imageUrl = imageUrl.imageUrl || Object.values(imageUrl)[0];
-          }
+      const validItems = items
+        .filter(item => item.IMAGE_OBJECT && item.IMAGE_OBJECT !== "")
+        .sort(() => 0.5 - Math.random());
   
-          const isValid = await checkImageValid(imageUrl);
-          if (isValid) {
-            const img = new Image();
-            img.onload = () => {
-              setBackgroundImage(imageUrl);
-              setTitle(item.TITLE);
-              setSelectedShow(item); // 여기!
-              setImageLoaded(true);
-              onLoad?.();
-            };
-            img.src = imageUrl;
-            return;
-          }
+      for (const item of validItems) {
+        let imageUrl = item.IMAGE_OBJECT;
+        if (typeof imageUrl === "object") {
+          imageUrl = imageUrl.imageUrl || Object.values(imageUrl)[0];
+        }
+  
+        const isValid = await checkImageValid(imageUrl);
+        if (isValid) {
+          const img = new Image();
+          img.onload = () => {
+            setBackgroundImage(imageUrl);
+            setTitle(item.TITLE);
+            setSelectedShow(item);
+            setImageLoaded(true);
+            onLoad?.();
+          };
+          img.src = imageUrl;
+          return;
         }
       }
     };
   
     randomImage();
   }, [onLoad]);
+  
   
   const moreBtn = () => {
     if (selectedShow) {

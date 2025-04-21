@@ -122,7 +122,7 @@ function MyPage() {
                   {ratedShows[star] && ratedShows[star].length > 0 ? (
                     <p>▶ {ratedShows[star].join(', ')}</p>
                   ) : (
-                    <p>남긴 공연이 없습니다.</p>
+                    <p>해당 스타점수를 남긴 공연이 없습니다.</p>
                   )}
                 </div>
               )}
